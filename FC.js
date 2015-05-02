@@ -89,14 +89,14 @@ var StringUtils = {
     {
         var n = 'qwertyuiop[]asdfghjkl;\'zxcvbnm,.йцукенгшщзхъфывапролджэячсмитьбю';
         var t = 'йцукенгшщзхъфывапролджэячсмитьбюqwertyuiop[]asdfghjkl;\'zxcvbnm,.';
-        return s.split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
+        return s.toLowerCase().split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
     },
     toTranslit: function translit(s)
     {
         var n = 'qwertyuiopasdfghjklzxcvbnmйцукенгшщзхъфывапролджэячсмитьбю';
         var t = ['к', 'в', 'е', 'р', 'т', 'и', 'у', 'и', 'о', 'п', 'а', 'с', 'д', 'ф', 'г', 'х', 'й', 'к', 'л', 'з', 'кс', 'с', 'в', 'б', 'н', 'м',
 		'y', 'ts', 'u', 'k', 'e', 'n', 'g', 'sh', 'sch', 'z', 'h', '', 'f', 'y', 'v', 'a', 'p', 'r', 'o', 'l', 'd', 'zh', 'e', 'ya', 'ch', 's', 'm', 'i', 't', '', 'b', 'yu']
-        return s.split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
+        return s.toLowerCase().split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
     },
     wRegexp: /[^\wйцукенгшщзхъфывапролджэячсмитьбю]/g,
     toInvariantRegexp: function (s)
