@@ -287,7 +287,8 @@ listItemP._onClick = function (event)
 listItemP.refresh = function ()
 {
     this._domNode.firstChild.style.width = this._domNode.firstChild.style.height = this._icon ? this._height + 'px' : 0;
-    this._domNode.firstChild.src = this._icon;
+    this._domNode.firstChild.src = this._icon || '';
+    this._domNode.firstChild.style.display = this._icon ? '' : 'none';
     this._domNode.firstChild.nextSibling.innerText = this._value;
     this._domNode.firstChild.nextSibling.style.height = this._domNode.firstChild.nextSibling.style.lineHeight = this._height + 'px';
     this._domNode.setAttribute('selected', this._selected);
@@ -603,7 +604,7 @@ comboP._loadData = function ()
         }]), 1000);
     });
 }
-    
+
 
 comboP._onDataLoaded = function (response)
 {
@@ -621,85 +622,85 @@ comboP._onDataLoaded = function (response)
     this._list.refresh();
 }
 
-    comboP._onDocumentClick = function (event)
+comboP._onDocumentClick = function (event)
+{
+    var node = event.target;
+    while (node)
     {
-        var node = event.target;
-        while (node)
-        {
-            if (node === this._domNode || node === this._list.getDomNode())
-                return;
-            node = node.parentNode;
-        }
+        if (node === this._domNode || node === this._list.getDomNode())
+            return;
+        node = node.parentNode;
+    }
 
-        this._detachFromDomEvent('click', this._onDocumentClick, window);
-        this._list.setParentNode(null);
-        this._list.refresh();
-        this._attachToDomEvent('click', this._onClick);
-    };
+    this._detachFromDomEvent('click', this._onDocumentClick, window);
+    this._list.setParentNode(null);
+    this._list.refresh();
+    this._attachToDomEvent('click', this._onClick);
+};
 
-    comboP._onClick = function ()
+comboP._onClick = function ()
+{
+    this._detachFromDomEvent('click', this._onClick);
+    this._list.setParentNode(document.body);
+    this._list.refresh();
+    this._list.getDomNode().style.left = this._domNode.offsetLeft + 'px';
+    this._list.getDomNode().style.top = (this._domNode.offsetTop + this._domNode.offsetHeight) + 'px';
+    this._attachToDomEvent('click', this._onDocumentClick, window);
+};
+
+comboP._filterList = function (ids)
+{
+    var items = this._list.getItems();
+    for (var i = 0; i < items.length; i++)
+        items[i].setIsVisible(!ids || ~ids.indexOf(items[i].getId()));
+    this._list.refresh();
+}
+
+comboP._onEditvalueChanged = function (sender, args)
+{
+    var regexp = StringUtils.toInvariantRegexp(args.NewValue), ids = null;
+    if (regexp)
     {
-        this._detachFromDomEvent('click', this._onClick);
-        this._list.setParentNode(document.body);
-        this._list.refresh();
-        this._list.getDomNode().style.left = this._domNode.offsetLeft + 'px';
-        this._list.getDomNode().style.top = (this._domNode.offsetTop + this._domNode.offsetHeight) + 'px';
-        this._attachToDomEvent('click', this._onDocumentClick, window);
-    };
-
-    comboP._filterList = function (ids)
-    {
+        ids = [];
         var items = this._list.getItems();
         for (var i = 0; i < items.length; i++)
-            items[i].setIsVisible(!ids || ~ids.indexOf(items[i].getId()));
-        this._list.refresh();
+            if (regexp.test(items[i].getValue()))
+                ids.push(items[i].getId());
     }
+    this._filterList(ids);
+}
 
-    comboP._onEditvalueChanged = function (sender, args)
+comboP._onListSelectionChanged = function (sender, args)
+{
+    if (!this._multiselect)
     {
-        var regexp = StringUtils.toInvariantRegexp(args.NewValue), ids = null;
-        if (regexp)
+        if (args.Selected)
         {
-            ids = [];
-            var items = this._list.getItems();
-            for (var i = 0; i < items.length; i++)
-                if (regexp.test(items[i].getValue()))
-                    ids.push(items[i].getId());
+            sender.deselectAll();
+            args.Item.setSelected(true);
         }
-        this._filterList(ids);
+        else
+            args.Item.setSelected(true);
+        args.Selected = true;
     }
-
-    comboP._onListSelectionChanged = function (sender, args)
-    {
-        if (!this._multiselect)
+    for (var i = 0; i < this._data.length; i++)
+        if (this._data[i].id === args.Item.getId())
         {
-            if (args.Selected)
-            {
-                sender.deselectAll();
-                args.Item.setSelected(true);
-            }
-            else
-                args.Item.setSelected(true);
-            args.Selected = true;
+            this.selectionChanged.invoke({ Item: this._data[i], Selected: args.Selected });
+            return;
         }
-        for (var i = 0; i < this._data.length; i++)
-            if (this._data[i].id === args.Item.getId())
-            {
-                this.selectionChanged.invoke({ Item: this._data[i], Selected: args.Selected });
-                return;
-            }
-    }
+}
 
-    comboP.refresh = function ()
-    {
-        this._edit.setWidth(this._width);
-        this._edit.setHeight(this._height);
-        this._edit.refresh();
-        this._list.setWidth(this._width);
-        this._list.refresh();
-        Combo.base.refresh.apply(this, arguments);
-    };
+comboP.refresh = function ()
+{
+    this._edit.setWidth(this._width);
+    this._edit.setHeight(this._height);
+    this._edit.refresh();
+    this._list.setWidth(this._width);
+    this._list.refresh();
+    Combo.base.refresh.apply(this, arguments);
+};
 
-    comboP = null;
+comboP = null;
 
-    //#endregion Combo
+//#endregion Combo
