@@ -1,0 +1,44 @@
+﻿.Edit
+{
+	background-color: white;
+	border: 1px solid grey;
+	color: black;
+	padding:0px;
+	box-sizing:border-box;
+}
+
+.Edit:hover,
+.Edit:focus
+{
+	border: 1px solid lightblue;
+	box-shadow: none;
+}
+
+.Edit[empty=true]
+{
+	color: grey;
+}
+
+.Edit:focus[empty=true]
+{
+	color: black;
+}
+
+
+.List
+{
+	border: 1px solid grey;
+	box-sizing:border-box;
+	background-color:white;
+}
+
+.ListItem[selected=true]
+{
+	background-color: lightgrey;
+}
+
+.ListItem:hover,
+.ListItem:hover[selected=true]
+{
+	background-color: lightblue;
+}
