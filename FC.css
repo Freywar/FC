@@ -42,3 +42,7 @@
 {
 	background-color: lightblue;
 }
+
+.ListItem .Icon{
+    float:left;
+}
