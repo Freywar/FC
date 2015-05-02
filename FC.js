@@ -98,7 +98,7 @@ var StringUtils = {
 		'y', 'ts', 'u', 'k', 'e', 'n', 'g', 'sh', 'sch', 'z', 'h', '', 'f', 'y', 'v', 'a', 'p', 'r', 'o', 'l', 'd', 'zh', 'e', 'ya', 'ch', 's', 'm', 'i', 't', '', 'b', 'yu']
         return s.toLowerCase().split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
     },
-    wRegexp: /[^\wйцукенгшщзхъфывапролджэячсмитьбю]/g,
+    wRegexp: /[^\wйцукенгшщзхъфывапролджэячсмитьбю]/gi,
     toInvariantRegexp: function (s)
     {
         if (!s)
@@ -115,7 +115,7 @@ var StringUtils = {
 
 //#region Object
 
-Object = cls(Object, function (options)
+var Object = cls(Object, function (options)
 {
     this._id = ('Object' + (Object.id = (Object.id || 0) + 1));
     if (options)
@@ -136,7 +136,7 @@ property(Object, 'id', { get: true, set: true });
 
 //#region Control
 
-Control = cls(Object, function (options)
+var Control = cls(Object, function (options)
 {
     Control.base.constructor.apply(this, arguments);
     this._init();
@@ -203,7 +203,7 @@ controlP = null;
 
 //#region Edit
 
-Edit = cls(Control, function ()
+var Edit = cls(Control, function ()
 {
     event(this, 'valueChanged');
     Edit.base.constructor.apply(this, arguments);
@@ -258,7 +258,7 @@ editP.refresh = function ()
 
 //#region ListItem
 
-ListItem = cls(Control, function ()
+var ListItem = cls(Control, function ()
 {
     event(this, 'clicked');
     ListItem.base.constructor.apply(this, arguments);
@@ -301,7 +301,7 @@ listItemP = null;
 
 //#region List
 
-List = cls(Control, function ()
+var List = cls(Control, function ()
 {
     event(this, 'selectionChanged');
     List.base.constructor.apply(this, arguments);
@@ -426,7 +426,7 @@ listP = null;
 
 //#region Combo
 
-Combo = cls(Control, function ()
+var Combo = cls(Control, function ()
 {
     event(this, 'selectionChanged');
     Combo.base.constructor.apply(this, arguments);
