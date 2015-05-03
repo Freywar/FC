@@ -383,7 +383,7 @@ function enm(members)
 
 	editP._onKeyUp = function (event)
 	{
-		if (this._text !== this._domNode.value)
+		if (this._text !== this._domNode.value || event.keyCode === 13)
 		{
 			this._text = this._domNode.value;
 			this.textChanged.invoke(this, { text: this._text })
