@@ -110,40 +110,60 @@ var filterableValues = {
 };
 
 var StringUtils = {
-	toUpperFirst: function (s)
-	{
-		return s[0].toUpperCase() + s.slice(1)
-	},
-	toOtherKeyboard: function (s)
-	{
-		var n = 'qwertyuiop[]asdfghjkl;\'zxcvbnm,.йцукенгшщзхъфывапролджэячсмитьбю';
-		var t = 'йцукенгшщзхъфывапролджэячсмитьбюqwertyuiop[]asdfghjkl;\'zxcvbnm,.';
-		return s.toLowerCase().split('').map(function (a)
-		{ return t[n.indexOf(a)] || a }).join('');
-	},
-	toTranslit: function translit(s)
-	{
-		var n = 'qwertyuiopasdfghjklzxcvbnmйцукенгшщзхъфывапролджэячсмитьбю';
-		var t = ['к', 'в', 'е', 'р', 'т', 'и', 'у', 'и', 'о', 'п', 'а', 'с', 'д', 'ф', 'г', 'х', 'й', 'к', 'л', 'з', 'кс', 'с', 'в', 'б', 'н', 'м',
-'y', 'ts', 'u', 'k', 'e', 'n', 'g', 'sh', 'sch', 'z', 'h', '', 'f', 'y', 'v', 'a', 'p', 'r', 'o', 'l', 'd', 'zh', 'e', 'ya', 'ch', 's', 'm', 'i', 't', '', 'b', 'yu']
-		return s.toLowerCase().split('').map(function (a)
-		{ return t[n.indexOf(a)] || a }).join('');
-	},
-	wRegexp: /[^\wйцукенгшщзхъфывапролджэячсмитьбю]/gi,
-	toInvariantRegexp: function (s)
-	{
-		if (!s)
-			return null;
+    toUpperFirst: function (s)
+    {
+        return s[0].toUpperCase() + s.slice(1)
+    },
+    toOtherKeyboard: function (s)
+    {
+        var n = 'qwertyuiop[]asdfghjkl;\'zxcvbnm,.йцукенгшщзхъфывапролджэячсмитьбю';
+        var t = 'йцукенгшщзхъфывапролджэячсмитьбюqwertyuiop[]asdfghjkl;\'zxcvbnm,.';
+        return s.toLowerCase().split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
+    },
+    toTranslit: function translit(s)
+    {
+        var n = 'qwertyuiopasdfghjklzxcvbnmйцукенгшщзхъфывапролджэячсмитьбю';
+        var t = ['к', 'в', 'е', 'р', 'т', 'и', 'у', 'и', 'о', 'п', 'а', 'с', 'д', 'ф', 'г', 'х', 'й', 'к', 'л', 'з', 'кс', 'с', 'в', 'б', 'н', 'м',
+	 'y', 'ts', 'u', 'k', 'e', 'n', 'g', 'sh', 'sch', 'z', 'h', '\'', 'f', 'y', 'v', 'a', 'p', 'r', 'o', 'l', 'd', 'zh', 'e', 'ya', 'ch', 's', 'm', 'i', 't', '\'', 'b', 'yu']
+        return s.toLowerCase().split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
+    },
+    wRegexp: /[\wйцукенгшщзхъфывапролджэячсмитьбю]+/gi,
+    toPrefixRegexp: function (s)
+    {
+        return new RegExp('(^| )' + s, 'i');
+    },
+    toInvariantRegexp: function (s)
+    {
+        if (!s)
+            return null;
 
-		return new RegExp(
-			 s.replace(this.wRegexp, '\\$1') + '|' +
- this.toTranslit(s).replace(this.wRegexp, '\\$1') + '|' +
- this.toOtherKeyboard(s).replace(this.wRegexp, '\\$1') + '|' +
- this.toTranslit(this.toOtherKeyboard(s)).replace(this.wRegexp, '\\$1'),
- 'i');
-	}
+        var origin = s.match(this.wRegexp);
+        if (origin)
+            origin = origin.map(this.toPrefixRegexp);
+
+        var translit = this.toTranslit(s).match(this.wRegexp);
+        if (translit)
+            translit = translit.map(this.toPrefixRegexp);
+
+        var other = this.toOtherKeyboard(s).match(this.wRegexp);
+        if (other)
+            other = other.map(this.toPrefixRegexp);
+
+        var otherTranslit = this.toTranslit(this.toOtherKeyboard(s)).match(this.wRegexp);
+        if (otherTranslit)
+            otherTranslit = otherTranslit.map(this.toPrefixRegexp);
+        if (origin || translit || other || otherTranslit)
+            return {
+                test: function (string)
+                {
+                    return (origin ? origin.every(function (a) { return a.test(string) }) : false) ||
+                         (translit ? translit.every(function (a) { return a.test(string) }) : false) ||
+                         (other ? other.every(function (a) { return a.test(string) }) : false) ||
+                         (otherTranslit ? otherTranslit.every(function (a) { return a.test(string) }) : false);
+                }
+            }
+    }
 };
-
 var Url = require('url');
 var Fs = require('fs');
 var Http = require('http');
@@ -165,10 +185,14 @@ require('http').createServer(function (request, response)
 		var responseJSON = [];
 		for (var i = 0; i < data.length ; i++)
 		{
-			var isFiltered = !filter;
-			for (var j in data[i])
-				if (filterableValues[j])
-					isFiltered = isFiltered || filter.test(data[i][j]);
+		    var  isFiltered = true;
+		    if (filter)
+		    {
+		        var fs = [];
+		        for (var j in filterableValues)
+		            fs.push(data[i][j])
+		        isFiltered = filter.test(fs.join(' '));
+		    }
 
 			if (isFiltered)
 			{
@@ -222,4 +246,4 @@ require('http').createServer(function (request, response)
 			});
 		});
 	}
-}).listen(process.env.PORT);
+}).listen(81);
