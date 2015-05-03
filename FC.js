@@ -811,7 +811,7 @@ function enm(members)
 
     comboP._onEditTextChanged = function (sender, args)
     {
-        this._lcoalFilteredIds = this._serverFilteredIds = null;
+        this._loсalFilteredIds = this._serverFilteredIds = null;
         if (args.text)
         {
             if (this._search === Combo.searchType.local || this._search === Combo.searchType.both)
@@ -820,7 +820,7 @@ function enm(members)
                 this._serverSearchTimeoutId = timeout(delegate(this._onServerSearchTimeout, this), this._serverSearchTimeout, args, this._serverSearchTimeoutId);
         }
         else
-            this._filterList(null);
+            this._updateFilter();
     }
 
     comboP._onLocalSearchTimeout = function (sender, args)
