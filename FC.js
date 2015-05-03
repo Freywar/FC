@@ -722,7 +722,8 @@ function enm(members)
     property(Combo, 'itemWithPictureHeight', { value: 50 });
     property(Combo, 'localSearchTimeoutId');
     property(Combo, 'serverSearchTimeoutId');
-    property(Combo, 'filteredIds');
+    property(Combo, 'localFilteredIds');
+    property(Combo, 'serverFilteredIds');
 
     comboP._init = function ()
     {
@@ -797,20 +798,20 @@ function enm(members)
         this._attachToDomEvent('mousedown', this._onDocumentMouseDown, document);
     };
 
-    /// <summary> Filter list items by ids. </summary>
-    /// <param name="ids" type="String[]"> Ids to show. If null all items are shown. </param>
-    comboP._filterList = function (ids)
+    comboP._updateFilter = function ()
     {
+        var ids = this._localFilteredIds;
+        if (this._serverFilteredIds)
+            ids = ids ? ids.concat(this._serverFilteredIds) : this._serverFilteredIds;
         var items = this._list.getItems();
         for (var i = 0; i < items.length; i++)
             items[i].setIsVisible(!ids || ~ids.indexOf(items[i].getId()));
         this._list.refresh();
-        this._filteredIds = ids;
     }
 
     comboP._onEditTextChanged = function (sender, args)
     {
-        this._filteredIds = null;
+        this._lcoalFilteredIds = this._serverFilteredIds = null;
         if (args.text)
         {
             if (this._search === Combo.searchType.local || this._search === Combo.searchType.both)
@@ -828,13 +829,14 @@ function enm(members)
         var regexp = StringUtils.toInvariantRegexp(args.text), ids = null;
         if (regexp)
         {
-            ids = this._filteredIds || [];
+            ids = [];
             var items = this._list.getItems();
             for (var i = 0; i < items.length; i++)
                 if (regexp.test(items[i].getText()))
                     ids.push(items[i].getId());
         }
-        this._filterList(ids);
+        this._localFilteredIds = ids;
+        this._updateFilter();
     }
 
     comboP._onServerSearchTimeout = function (sender, args)
@@ -845,11 +847,12 @@ function enm(members)
 
     comboP._onServerSearchLoaded = function (sender, args)
     {
-        var data = JSON.parse(args.responseText), ids = this._filteredIds || [];
+        var data = JSON.parse(args.responseText), ids =  [];
         for (var i = 0; i < data.length; i++)
             if (!~ids.indexOf(data[i].id))
                 ids.push(data[i].id);
-        this._filterList(ids);
+        this._serverFilteredIds = ids;
+        this._updateFilter();
     };
 
     comboP._onListSelectionChanged = function (sender, args)
