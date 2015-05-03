@@ -7,25 +7,16 @@
     <script type="text/javascript">
         var combos = [];
 
-        function updateCombos(other)
+        function updateCombos()
         {
-            var searchType, ls = document.getElementById('localSearch'), ss = document.getElementById('serverSearch');
-            if (!ls.checked && !ss.checked)
-                document.getElementById(other || 'localSearch').checked = true;
-            if (!ls.checked && ss.checked)
-                searchType = Combo.searchType.server;
-            if (ls.checked && !ss.checked)
-                searchType = Combo.searchType.local;
-            if (ls.checked && ss.checked)
-                searchType = Combo.searchType.both;
-
             for (var i = 0; i < combos.length; i++)
             {
-                combos[i].setSearch(searchType);
+                combos[i].setLocalSearch(document.getElementById('localSearch').checked === 'checked');
                 combos[i].setLocalSearchTimeout(+document.getElementById('localSearchTimeout').value);
+                combos[i].setServerSearch(document.getElementById('serverSearch').checked === 'checked');
                 combos[i].setServerSearchTimeout(+document.getElementById('serverSearchTimeout').value);
-                combos[i].setShowPhotos(document.getElementById('showPhotos').checked);
-                combos[i].setMultiselect(document.getElementById('multiselect').checked);
+                combos[i].setShowIcons(document.getElementById('showIcons').checked === 'checked');
+                combos[i].setMultiselect(document.getElementById('multiselect').checked === 'checked');
                 combos[i].refresh();
             }
         }
@@ -36,8 +27,8 @@
                 parentNode: document.getElementById('combos'),
                 emptyText: 'Search...',
                 emptyListText: 'Nothing found',
-                width: 421,
-                height: 27,
+                width: 400,
+                height: 24,
                 selectionChanged: delegate(function (s, e) { console.log(e) }, this)
             }))
         }
@@ -51,7 +42,7 @@
             xhr.onreadystatechange = function ()
             {
                 if (xhr.readyState === 4 && xhr.status === 200)
-                    document.getElementById('data').innerText = 'Available users:\n' + xhr.responseText.replace(/\,{/g, ',\n{');
+                    document.getElementById('data').innerText = 'Available users:\n' + xhr.responseText.replace(/\, {/g, ',\n{');
             }
             xhr.send(null, true);
         }
@@ -59,9 +50,9 @@
 </head>
 
 <body onload="loaded()">
-    <input id="localSearch" type="checkbox" checked="checked" onchange="updateCombos('serverSearch')" /> Use local search after <input id="localSearchTimeout" type="text" value="10" onchange="updateCombos()" /> ms.<br />
-    <input id="serverSearch" type="checkbox" onchange="updateCombos('localSearch')" /> Use server search after <input id="serverSearchTimeout" type="text" value="100" onchange="    updateCombos()" /> ms.<br />
-    <input id="showPhotos" type="checkbox" checked="checked" onchange="updateCombos()" /> Show photos.<br />
+    <input id="localSearch" type="checkbox" checked="checked" onchange="updateCombos()" /> Use local search after <input id="localSearchTimeout" type="text" value="100" onchange="updateCombos()" /> ms.<br />
+    <input id="serverSearch" type="checkbox" onchange="updateCombos()" /> Use server search after <input type="text" value="1000" onchange="updateCombos()" /> ms.<br />
+    <input id="showIcons" type="checkbox" checked="checked" /> Show photos.<br />
     <input id="multiselect" type="checkbox" onchange="updateCombos()" /> Enable multiselect.<br />
     <br />
     <div id="combos"></div><br />

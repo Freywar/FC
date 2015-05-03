@@ -1,18 +1,29 @@
-﻿.Edit
+﻿.Control
 {
+	font-size: 12px;
+	font-family: Tahoma;
+	box-sizing: border-box;
 	background-color: white;
-	border: 1px solid grey;
 	color: black;
-	padding:0px;
-	box-sizing:border-box;
 }
 
-.Edit:hover,
-.Edit:focus
+.NoSelect
 {
-	border: 1px solid lightblue;
-	box-shadow: none;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	cursor: default;
 }
+
+.Edit
+{
+	padding: 0px 8px 0px 8px;
+	border: 1px solid #c0cac5;
+}
+
 
 .Edit[empty=true]
 {
@@ -24,25 +35,35 @@
 	color: black;
 }
 
-
 .List
 {
-	border: 1px solid grey;
-	box-sizing:border-box;
-	background-color:white;
+	border: 1px solid #c0cac5;
+}
+
+.ListItem
+{
+	margin-top: -1px;
+	margin-left: -1px;
+	box-sizing: border-box;
+	border: 1px solid #c0cac5;
 }
 
 .ListItem[selected=true]
 {
-	background-color: lightgrey;
+	background-color: #c0cac5;
 }
 
-.ListItem:hover,
+.ListItem:hover
+{
+	background-color: #f1f5f9;
+}
+
 .ListItem:hover[selected=true]
 {
-	background-color: lightblue;
+	background-color: lightgray;
 }
 
-.ListItem .Icon{
-    float:left;
+.ListItem .Icon
+{
+	float: left;
 }

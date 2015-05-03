@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="FC.css" rel="stylesheet" />
+    <script src="FC.js"></script>
+    <script type="text/javascript">
+        var combo0, combo1;
+        function loaded()
+        {
+            combo0 = new Combo({
+                parentNode: document.body,
+                url:'http://localhost:81',
+                emptyText: 'Start typing name or surname...',
+                emptyListText:'Nothing found',
+                width: 400,
+                height: 24,
+                selectionChanged: delegate(function (s, e) { console.log(e) }, this)
+            })
+
+            combo1 = new Combo({
+                parentNode: document.body,
+                url: 'http://localhost:81',
+                emptyText: 'Start typing name or surname...',
+                emptyListText: 'Nothing found',
+                width: 400,
+                height: 24,
+                showIcons:false,
+                selectionChanged: delegate(function (s, e) { console.log(e) }, this)
+            })
+        }
+    </script>
+</head>
+
+<body onload="loaded()">
+
+</body>
+</html>
