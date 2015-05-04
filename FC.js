@@ -25,6 +25,15 @@ if (!Array.prototype.indexOf)
                 return i;
         return -1;
     }
+
+if (!Array.prototype.every)
+    Array.prototype.every = function(f)
+    {
+        for (var i = 0; i < this.length; i++)
+            if (!f(this[i]))
+                return false;
+        return true;
+    }
 //#endregion polyfill
 
 //#region core
@@ -34,20 +43,44 @@ var StringUtils = {
     {
         return s[0].toUpperCase() + s.slice(1)
     },
+    _keyboardRegexp: /[a-z\[\]\;\'\,\.]/g,
+    _keyboardMap: {
+        "q": "й", "w": "ц", "e": "у", "r": "к", "t": "е", "y": "н",
+        "u": "г", "i": "ш", "o": "щ", "p": "з", "[": "х", "]": "ъ",
+        "a": "ф", "s": "ы", "d": "в", "f": "а", "g": "п", "h": "р",
+        "j": "о", "k": "л", "l": "д", ";": "ж", "'": "э", "z": "я",
+        "x": "ч", "c": "с", "v": "м", "b": "и", "n": "т", "m": "ь",
+        ",": "б", ".": "ю", "й": "q", "ц": "w", "у": "e", "к": "r",
+        "е": "t", "н": "y", "г": "u", "ш": "i", "щ": "o", "з": "p",
+        "х": "[", "ъ": "]", "ф": "a", "ы": "s", "в": "d", "а": "f",
+        "п": "g", "р": "h", "о": "j", "л": "k", "д": "l", "ж": ";",
+        "э": "'", "я": "z", "ч": "x", "с": "c", "м": "v", "и": "b",
+        "т": "n", "ь": "m", "б": ",", "ю": "."
+    },
     toOtherKeyboard: function (s)
     {
-        var n = 'qwertyuiop[]asdfghjkl;\'zxcvbnm,.йцукенгшщзхъфывапролджэячсмитьбю';
-        var t = 'йцукенгшщзхъфывапролджэячсмитьбюqwertyuiop[]asdfghjkl;\'zxcvbnm,.';
-        return s.toLowerCase().split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
+        return s.toLowerCase().replace(/./g, function (a) { return StringUtils._keyboardMap[a] || a });
     },
+    _translitMap: {
+        "q": "к", "w": "в", "e": "е", "r": "р", "t": "т", "y": "и",
+        "u": "у", "i": "и", "o": "о", "p": "п", "a": "а", "s": "с",
+        "d": "д", "f": "ф", "g": "г", "h": "х", "j": "дж", "k": "к",
+        "l": "л", "z": "з", "x": "кс", "c": "с", "v": "в", "b": "б",
+        "n": "н", "m": "м", "й": "y", "ц": "ts", "у": "u", "к": "k",
+        "е": "e", "н": "n", "г": "g", "ш": "sh", "щ": "sch", "з": "z",
+        "х": "h", "ъ": "'", "ф": "f", "ы": "y", "в": "v", "а": "a",
+        "п": "p", "р": "r", "о": "o", "л": "l", "д": "d", "ж": "zh",
+        "э": "e", "я": "ya", "ч": "ch", "с": "s", "м": "m", "и": "i",
+        "т": "t", "ь": "'", "б": "b", "ю": "yu", "ts": "ц", "sh": "ш",
+        "sch": "щ", "zh": "ж", "ch": "ч", "ya": "я", 'yo': 'ё', "yu": "ю",
+        'ye': 'е', 'ё': 'yo', '\'': 'ь'
+    },
+    _translitRegexp: /кс|ts|sh|sch|'|zh|ya|ch|yu|[a-zа-я]/g,
     toTranslit: function translit(s)
     {
-        var n = 'qwertyuiopasdfghjklzxcvbnmйцукенгшщзхъфывапролджэячсмитьбю';
-        var t = ['к', 'в', 'е', 'р', 'т', 'и', 'у', 'и', 'о', 'п', 'а', 'с', 'д', 'ф', 'г', 'х', 'й', 'к', 'л', 'з', 'кс', 'с', 'в', 'б', 'н', 'м',
-	 'y', 'ts', 'u', 'k', 'e', 'n', 'g', 'sh', 'sch', 'z', 'h', '\'', 'f', 'y', 'v', 'a', 'p', 'r', 'o', 'l', 'd', 'zh', 'e', 'ya', 'ch', 's', 'm', 'i', 't', '\'', 'b', 'yu']
-        return s.toLowerCase().split('').map(function (a) { return t[n.indexOf(a)] || a }).join('');
+        return s.toLowerCase().replace(this._translitRegexp, function (a) { return StringUtils._translitMap[a] })
     },
-    wRegexp: /[\wйцукенгшщзхъфывапролджэячсмитьбю]+/gi,
+    _wordRegexp: /[\wа-я]+/gi,
     toPrefixRegexp: function (s)
     {
         return new RegExp('(^| )' + s, 'i');
@@ -57,19 +90,19 @@ var StringUtils = {
         if (!s)
             return null;
 
-        var origin = s.match(this.wRegexp);
+        var origin = s.match(this._wordRegexp);
         if (origin)
             origin = origin.map(this.toPrefixRegexp);
 
-        var translit = this.toTranslit(s).match(this.wRegexp);
+        var translit = this.toTranslit(s).match(this._wordRegexp);
         if (translit)
             translit = translit.map(this.toPrefixRegexp);
 
-        var other = this.toOtherKeyboard(s).match(this.wRegexp);
+        var other = this.toOtherKeyboard(s).match(this._wordRegexp);
         if (other)
             other = other.map(this.toPrefixRegexp);
 
-        var otherTranslit = this.toTranslit(this.toOtherKeyboard(s)).match(this.wRegexp);
+        var otherTranslit = this.toTranslit(this.toOtherKeyboard(s)).match(this._wordRegexp);
         if (otherTranslit)
             otherTranslit = otherTranslit.map(this.toPrefixRegexp);
         if (origin || translit || other || otherTranslit)
@@ -811,7 +844,7 @@ function enm(members)
 
     comboP._onEditTextChanged = function (sender, args)
     {
-        this._loсalFilteredIds = this._serverFilteredIds = null;
+        this._localFilteredIds = this._serverFilteredIds = null;
         if (args.text)
         {
             if (this._search === Combo.searchType.local || this._search === Combo.searchType.both)
@@ -847,7 +880,7 @@ function enm(members)
 
     comboP._onServerSearchLoaded = function (sender, args)
     {
-        var data = JSON.parse(args.responseText), ids =  [];
+        var data = JSON.parse(args.responseText), ids = [];
         for (var i = 0; i < data.length; i++)
             if (!~ids.indexOf(data[i].id))
                 ids.push(data[i].id);
